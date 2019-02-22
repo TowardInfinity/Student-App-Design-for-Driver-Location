@@ -16,6 +16,10 @@
             android:id="@+id/map_driver"
             android:icon="@drawable/ic_drive_eta_black_24dp"
             android:title="Driver" />
+        <item
+            android:id="@+id/settings"
+            android:icon="@drawable/ic_settings_black_24dp"
+            android:title="Settings" />
     </group>
 
     <item android:title="Communicate">
