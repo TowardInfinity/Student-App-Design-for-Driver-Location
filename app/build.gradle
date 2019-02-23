@@ -28,6 +28,9 @@ dependencies {
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
-
+    // display GIF
     implementation 'pl.droidsonroids.gif:android-gif-drawable:1.2.16'
+
+    // Round ImageView center cropped
+    implementation 'de.hdodenhof:circleimageview:3.0.0'
 }
