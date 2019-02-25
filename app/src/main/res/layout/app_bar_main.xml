@@ -36,4 +36,6 @@
 
     <include layout="@layout/content_main" />
 
+    <include layout="@layout/fragment_bottom_sheet_dialog" />
+
 </android.support.design.widget.CoordinatorLayout>

@@ -23,6 +23,7 @@ public class MapsFragment extends Fragment {
     private String mParam1;
     private String mParam2;
 
+
     public MapsFragment() {
         // Required empty public constructor
     }
