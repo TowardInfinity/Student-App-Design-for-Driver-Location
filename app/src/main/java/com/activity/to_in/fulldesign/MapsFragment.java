@@ -1,10 +1,11 @@
 package com.activity.to_in.fulldesign;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
 
 
 /**
@@ -27,6 +28,33 @@ public class MapsFragment extends Fragment {
     public MapsFragment() {
         // Required empty public constructor
     }
+
+//    private GoogleMap mMap;
+//    private FusedLocationProviderClient mFusedLocationClient;
+//    private LocationRequest mLocationRequest;
+//    private LocationCallback mLocationCallback;
+//
+//    private FloatingActionButton fab;
+//
+//    private Location studentLocation;
+//    private Location defaultLocation;
+//    private Location driverLocation;
+//
+//    private LatLng studentLatLng;
+//    private LatLng driverLatLng;
+//
+//    private Marker studentMarker, driverMarker;
+//    private Polyline line;
+//    private List<Polyline> polylines;
+//
+//    private static final double DEFAULT_LAT = 34.124929;
+//    private static final double DEFAULT_LNG = 74.840259;
+//    private static final float CAMERA_ZOOM_LEVEL = 15f;
+//
+//    private Polyline currentPolyline;
+//
+//    private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
+//    private final String TAG = "MapsActivity";
 
     /**
      * Use this factory method to create a new instance of
