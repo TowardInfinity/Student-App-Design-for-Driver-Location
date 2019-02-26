@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "335498337554",
+    "firebase_url": "https://neat-vent-232813.firebaseio.com",
+    "project_id": "neat-vent-232813",
+    "storage_bucket": "neat-vent-232813.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:335498337554:android:c52ed3eb3a2082fa",
+        "android_client_info": {
+          "package_name": "com.activity.to_in.fulldesign"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "335498337554-lnas1lk1rgqvg9u9rgsm9202paf5q0sj.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.activity.to_in.fulldesign",
+            "certificate_hash": "4e506e43c423320c1f5389159559ba5d51ffe67e"
+          }
+        },
+        {
+          "client_id": "335498337554-isah7k7vfphte9bf6d6q4nuotohp19v7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDjTbyFoYMaL_3qVWaF5kum--7yB3qvQiI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "335498337554-isah7k7vfphte9bf6d6q4nuotohp19v7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
