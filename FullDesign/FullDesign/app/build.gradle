@@ -36,14 +36,13 @@ dependencies {
 
     //Firebase
     implementation 'com.google.firebase:firebase-core:16.0.7'
-    implementation 'com.google.firebase:firebase-database:16.0.6'
+    implementation 'com.google.firebase:firebase-database:16.1.0'
 
     //Google Play Services
     implementation "com.google.android.gms:play-services-maps:16.0.0"
     implementation 'com.google.android.gms:play-services-location:16.0.0'
 
-//    // Permission Dispatcher
-//    implementation "org.permissionsdispatcher:permissionsdispatcher:4.3.0"
-//    annotationProcessor "org.permissionsdispatcher:permissionsdispatcher-processor:4.3.0"
+    // permission Management
+    implementation 'pub.devrel:easypermissions:2.0.1'
 }
 apply plugin: 'com.google.gms.google-services'
