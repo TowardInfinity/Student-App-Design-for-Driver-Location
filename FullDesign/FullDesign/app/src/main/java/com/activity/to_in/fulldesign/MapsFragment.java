@@ -8,6 +8,7 @@ import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,8 +32,14 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import pub.devrel.easypermissions.AppSettingsDialog;
@@ -88,6 +95,8 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 
     final private long UPDATE_INTERVAL = 4 * 1000;  /* 10 secs */
     final private long FASTEST_INTERVAL = 2000; /* 2 sec */
+
+    final private String driverId = "354732476329467832";
 
     public static MapsFragment newInstance(String param1, String param2) {
         MapsFragment fragment = new MapsFragment();
@@ -211,10 +220,52 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 //        counter++;
 //        textView.setText(msg);
 //        String counterStr = String.valueOf(counter);
-        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
         studentLocation = location;
 //        getDriverLocation();
         initCamera(location);
+        getDriverLocation();
+    }
+
+    private void getDriverLocation() {
+        DatabaseReference myRef = FirebaseDatabase.getInstance().getReference(driverId);
+//        double latitude = Double.parseDouble(myRef.child("lat").getKey());
+//        double longitude = Double.parseDouble(myRef.child("long").getKey());
+//        String latitude = String.valueOf(driverLocationReference.child("lat"));
+//        String  longitude = String.valueOf(driverLocationReference.child("long"));
+//        driverLocation = new Location("driver");
+//        driverLocation.setLatitude(latitude);
+//        driverLocation.setLongitude(longitude);
+        myRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // This method is called once with the initial value and again
+                // whenever data at this location is updated.
+//                String value = dataSnapshot.getValue(String.class);
+//                Log.d(TAG, "Value is: " + value);
+
+                Map<String, Object> dataMap = (Map<String, Object>) dataSnapshot.getValue();
+
+                double locationLat = 25.625818;
+                double locationLng = 85.106596;
+                if (dataMap.get("lat") != null && dataMap.get("long") != null) {
+                    locationLat = Double.parseDouble(Objects.requireNonNull(dataMap.get("lat")).toString());
+                    locationLng = Double.parseDouble(Objects.requireNonNull(dataMap.get("long")).toString());
+                }
+
+                String loc = "Latitude: " + locationLat + " \nLongitude: " + locationLng;
+                Toast.makeText(getContext(), loc, Toast.LENGTH_SHORT).show();
+                driverLocation = new Location("driver");
+                driverLocation.setLatitude(locationLat);
+                driverLocation.setLongitude(locationLng);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                // Failed to read value
+                Log.w(TAG, "Failed to read value.", error.toException());
+            }
+        });
     }
 
     @SuppressLint("MissingPermission")
@@ -235,16 +286,16 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 
             studentLatLng = new LatLng
                     (location.getLatitude(), location.getLongitude());
-//            driverLatLng = new LatLng
-//                    (driverLocation.getLatitude(), driverLocation.getLongitude());
+            driverLatLng = new LatLng
+                    (driverLocation.getLatitude(), driverLocation.getLongitude());
 
             if (studentMarker != null)
                 studentMarker.remove();
             studentMarker = mMap.addMarker(new MarkerOptions().position(studentLatLng).title("Student"));
 
-//            if (driverMarker != null)
-//                driverMarker.remove();
-//            driverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLng).title("Driver"));
+            if (driverMarker != null)
+                driverMarker.remove();
+            driverMarker = mMap.addMarker(new MarkerOptions().position(driverLatLng).title("Driver"));
 
             cameraZoom();
         } catch (NullPointerException e) {
@@ -269,9 +320,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
                 // Access to the location has been granted to the app.
                 mMap.setMyLocationEnabled(true);
             }
-            Toast.makeText(getContext(), "Opening camera", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getContext(), "Opening camera", Toast.LENGTH_SHORT).show();
         } else {
-            EasyPermissions.requestPermissions(this, "We need permissions because For Location Services.",
+            EasyPermissions.requestPermissions(this, "We need permissions For Location Services.",
                     123, perms);
         }
     }
@@ -300,7 +351,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
         builder.include(new LatLng(studentLocation.getLatitude(), studentLocation.getLongitude()));
 //        builder.include(new LatLng(defaultLocation.getLatitude(), defaultLocation.getLongitude()));
-//        builder.include(new LatLng(driverLocation.getLatitude(), driverLocation.getLongitude()));
+        builder.include(new LatLng(driverLocation.getLatitude(), driverLocation.getLongitude()));
 
         LatLngBounds bounds = builder.build();
         int padding = ((width * 50) / 100); // offset from edges of the map
