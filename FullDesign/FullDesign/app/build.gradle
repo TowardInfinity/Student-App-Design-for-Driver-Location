@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-database:16.1.0'
 
     //Google Play Services
-    implementation "com.google.android.gms:play-services-maps:16.0.0"
+    implementation "com.google.android.gms:play-services-maps:16.1.0"
     implementation 'com.google.android.gms:play-services-location:16.0.0'
 
     // permission Management

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -16,6 +17,9 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -27,7 +31,6 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,18 +38,18 @@ import java.util.Objects;
 import pub.devrel.easypermissions.AppSettingsDialog;
 import pub.devrel.easypermissions.EasyPermissions;
 
+import static com.google.android.gms.location.LocationServices.getFusedLocationProviderClient;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * Use the {@link MapsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+
 public class MapsFragment extends Fragment implements OnMapReadyCallback,
         EasyPermissions.PermissionCallbacks, ActivityCompat.OnRequestPermissionsResultCallback{
 
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
+    private final String TAG = "MapsActivity";
+    String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
@@ -83,19 +86,9 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
 
     private Polyline currentPolyline;
 
-    private static final int[] COLORS = new int[]{R.color.primary_dark_material_light};
-    private final String TAG = "MapsActivity";
-    String[] perms = {Manifest.permission.ACCESS_FINE_LOCATION};
+    final private long UPDATE_INTERVAL = 4 * 1000;  /* 10 secs */
+    final private long FASTEST_INTERVAL = 2000; /* 2 sec */
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MapsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
     public static MapsFragment newInstance(String param1, String param2) {
         MapsFragment fragment = new MapsFragment();
         Bundle args = new Bundle();
@@ -117,60 +110,111 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_maps, container, false);
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         assert mapFragment != null;
         mapFragment.getMapAsync(this);
-        initializeOnCreate();
-        return view;
-
-    }
-
-    @SuppressLint("MissingPermission")
-    private void initializeOnCreate() {
-//        fab = getActivity().findViewById(R.id.fab);
+//        initializeOnCreate();
+        startLocationUpdates();
 
         defaultLocation = new Location("Default");
         defaultLocation.setLatitude(DEFAULT_LAT);
         defaultLocation.setLongitude(DEFAULT_LNG);
 
-        mFusedLocationClient = new FusedLocationProviderClient(getActivity());
+        return view;
+
+    }
+
+//    @SuppressLint("MissingPermission")
+//    private void initializeOnCreate() {
+////        fab = getActivity().findViewById(R.id.fab);
+//
+//        defaultLocation = new Location("Default");
+//        defaultLocation.setLatitude(DEFAULT_LAT);
+//        defaultLocation.setLongitude(DEFAULT_LNG);
+//
+//        mFusedLocationClient = new FusedLocationProviderClient(getActivity());
+//        mLocationRequest = new LocationRequest();
+//        mLocationRequest.setInterval(5000);
+//        mLocationRequest.setFastestInterval(1000);
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+//
+//        mFusedLocationClient.getLastLocation()
+//                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+//                    @Override
+//                    public void onSuccess(Location location) {
+//                        // Got last known location. In some rare situations this can be null.
+//                        if (location != null) {
+//                            // Logic to handle location object
+//                            studentLocation = location;
+////                            getDriverLocation();
+//                            initCamera(location);
+////                            manageMarker();
+////                            Toast.makeText(getContext(), "Location Updated.", Toast.LENGTH_SHORT).show();
+//
+//                        }
+//                    }
+//                });
+//
+//        mLocationCallback = new LocationCallback() {
+//            @Override
+//            public void onLocationResult(LocationResult locationResult) {
+//                for (Location location : locationResult.getLocations()) {
+//                    // Update UI with location data
+//                    studentLocation = location;
+////                    getDriverLocation();
+//                    initCamera(location);
+////                    manageMarker();
+////                    Toast.makeText(getContext(), "Location Updated.", Toast.LENGTH_SHORT).show();
+//                }
+//
+//            }
+//        };
+//    }
+
+    @SuppressLint("MissingPermission")
+    protected void startLocationUpdates() {
+
+        // Create the location request to start receiving updates
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(5000);
-        mLocationRequest.setFastestInterval(1000);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+        mLocationRequest.setInterval(UPDATE_INTERVAL);
+        mLocationRequest.setFastestInterval(FASTEST_INTERVAL);
 
-        mFusedLocationClient.getLastLocation()
-                .addOnSuccessListener(getActivity(), new OnSuccessListener<Location>() {
+        // Create LocationSettingsRequest object using location request
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder();
+        builder.addLocationRequest(mLocationRequest);
+        LocationSettingsRequest locationSettingsRequest = builder.build();
+
+        // Check whether location settings are satisfied
+        // https://developers.google.com/android/reference/com/google/android/gms/location/SettingsClient
+        SettingsClient settingsClient = LocationServices.getSettingsClient(getContext());
+        settingsClient.checkLocationSettings(locationSettingsRequest);
+
+        // new Google API SDK v11 uses getFusedLocationProviderClient(this)
+        getFusedLocationProviderClient(getContext()).requestLocationUpdates(mLocationRequest, new LocationCallback() {
                     @Override
-                    public void onSuccess(Location location) {
-                        // Got last known location. In some rare situations this can be null.
-                        if (location != null) {
-                            // Logic to handle location object
-                            studentLocation = location;
-//                            getDriverLocation();
-                            initCamera(location);
-//                            manageMarker();
-                            Toast.makeText(getContext(), "Location Updated.", Toast.LENGTH_SHORT).show();
-
-                        }
+                    public void onLocationResult(LocationResult locationResult) {
+                        // do work here
+                        onLocationChanged(locationResult.getLastLocation());
                     }
-                });
+                },
+                Looper.myLooper());
+    }
 
-        mLocationCallback = new LocationCallback() {
-            @Override
-            public void onLocationResult(LocationResult locationResult) {
-                for (Location location : locationResult.getLocations()) {
-                    // Update UI with location data
-                    studentLocation = location;
-//                    getDriverLocation();
-                    initCamera(location);
-//                    manageMarker();
-                    Toast.makeText(getContext(), "Location Updated.", Toast.LENGTH_SHORT).show();
-                }
-
-            }
-        };
+    public void onLocationChanged(Location location) {
+        // New location has now been determined
+        String msg = "Latitude: " +
+                Double.toString(location.getLatitude()) + ",\n\nLongitude: " +
+                Double.toString(location.getLongitude());
+//        counter++;
+//        textView.setText(msg);
+//        String counterStr = String.valueOf(counter);
+        Toast.makeText(getContext(), msg, Toast.LENGTH_SHORT).show();
+        studentLocation = location;
+//        getDriverLocation();
+        initCamera(location);
     }
 
     @SuppressLint("MissingPermission")
@@ -190,7 +234,7 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
         try {
 
             studentLatLng = new LatLng
-                    (studentLocation.getLatitude(), studentLocation.getLongitude());
+                    (location.getLatitude(), location.getLongitude());
 //            driverLatLng = new LatLng
 //                    (driverLocation.getLatitude(), driverLocation.getLongitude());
 
@@ -241,13 +285,12 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback,
     @Override
     public void onPermissionsGranted(int requestCode, List<String> list) {
         Toast.makeText(getContext(), "Thanks For Permissions", Toast.LENGTH_SHORT).show();
-        initializeOnCreate();
     }
 
     @Override
     public void onPermissionsDenied(int requestCode, List<String> list) {
-    Fragment fragment = new MapsFragment();
-    if (EasyPermissions.somePermissionPermanentlyDenied(fragment, list)) {
+        Fragment fragment = new MapsFragment();
+        if (EasyPermissions.somePermissionPermanentlyDenied(fragment, list)) {
             new AppSettingsDialog.Builder(this).build().show();
         }
     }
